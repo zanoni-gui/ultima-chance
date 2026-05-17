@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Event {
+  id                String        @id @default(uuid())
+  normalizedId      String        @unique
+  homeTeam          String
+  awayTeam          String
+  league            String
+  sport             String        @default("football")
+  startsAt          DateTime
+  isLive            Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  odds              Odd[]
+  opportunities     Opportunity[]
+
+  @@index([startsAt])
+  @@index([normalizedId])
+}
+
+model Odd {
+  id          String    @id @default(uuid())
+  eventId     String
+  event       Event     @relation(fields: [eventId], references: [id])
+  bookmaker   String
+  marketKey   String
+  line        Decimal   @db.Decimal(10, 2)
+  outcome     String
+  odd         Decimal   @db.Decimal(10, 4)
+  capturedAt  DateTime  @default(now())
+
+  @@index([eventId, bookmaker, marketKey])
+  @@index([capturedAt])
+}
+
+model Opportunity {
+  id              String    @id @default(uuid())
+  eventId         String
+  event           Event     @relation(fields: [eventId], references: [id])
+  type            String
+  marketKey       String
+  line            Decimal   @db.Decimal(10, 2)
+  outcome         String?
+  sharpOdd        Decimal?  @db.Decimal(10, 4)
+  softOdd         Decimal?  @db.Decimal(10, 4)
+  fairOdd         Decimal?  @db.Decimal(10, 4)
+  edgePct         Decimal?  @db.Decimal(6, 2)
+  arbPct          Decimal?  @db.Decimal(6, 2)
+  bookmaker       String?
+  stakesSuggested Json?
+  alertedAt       DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+}
