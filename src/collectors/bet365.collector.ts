@@ -4,7 +4,7 @@ import { RawOdd } from '../types';
 import { normalizeMarket } from '../normalizer/markets';
 import { injectCookies, cookiesExist } from '../utils/cookies';
 
-const BET365_LIVE_URL = 'https://www.bet365.com/#/IP/EV';
+const BET365_LIVE_URL = 'https://www.bet365.bet.br/#/IP/EV';
 
 export class Bet365Collector extends BaseCollector {
   readonly name = 'bet365';
