@@ -1,5 +1,7 @@
 import { PinnacleCollector } from '../collectors/pinnacle.collector';
 import { Bet365Collector } from '../collectors/bet365.collector';
+import { BetanoCollector } from '../collectors/betano.collector';
+import { NovibetCollector } from '../collectors/novibet.collector';
 import { normalizeMarket } from '../normalizer/markets';
 import { normalizeEventId } from '../normalizer/events';
 import { setOdd, ODDS_KEY, EVENT_ODDS_KEY, redis } from '../db/redis';
@@ -8,7 +10,9 @@ import { NormalizedOdd, RawOdd } from '../types';
 import { config } from '../config';
 
 const pinnacle = new PinnacleCollector();
-const bet365 = new Bet365Collector();
+const bet365   = new Bet365Collector();
+const betano   = new BetanoCollector();
+const novibet  = new NovibetCollector();
 
 async function processRawOdd(raw: RawOdd): Promise<NormalizedOdd | null> {
   const marketKey = normalizeMarket(raw.market);
@@ -43,14 +47,18 @@ async function runCollection(): Promise<void> {
   console.log('[CollectorWorker] Starting collection cycle...');
   const eventsSeen = new Set<string>();
 
-  const [pinnacleResult, bet365Result] = await Promise.allSettled([
+  const [pinnacleResult, bet365Result, betanoResult, novibetResult] = await Promise.allSettled([
     pinnacle.fetchOdds(),
     bet365.fetchOdds(),
+    betano.fetchOdds(),
+    novibet.fetchOdds(),
   ]);
 
   const allRaw: RawOdd[] = [
     ...(pinnacleResult.status === 'fulfilled' ? pinnacleResult.value : []),
-    ...(bet365Result.status === 'fulfilled' ? bet365Result.value : []),
+    ...(bet365Result.status  === 'fulfilled' ? bet365Result.value  : []),
+    ...(betanoResult.status  === 'fulfilled' ? betanoResult.value  : []),
+    ...(novibetResult.status === 'fulfilled' ? novibetResult.value : []),
   ];
 
   for (const raw of allRaw) {

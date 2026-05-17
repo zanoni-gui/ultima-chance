@@ -1,4 +1,4 @@
-export type Bookmaker = 'pinnacle' | 'bet365';
+export type Bookmaker = 'pinnacle' | 'bet365' | 'betano' | 'novibet';
 
 export type MarketKey =
   | 'throw_ins_ou'
