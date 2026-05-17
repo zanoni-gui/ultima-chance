@@ -2,6 +2,7 @@ import { chromium, Browser, BrowserContext } from 'playwright';
 import { BaseCollector } from './base.collector';
 import { RawOdd } from '../types';
 import { normalizeMarket } from '../normalizer/markets';
+import { injectCookies, cookiesExist } from '../utils/cookies';
 
 const BETANO_LIVE_URL = 'https://br.betano.com/sport/futebol/ao-vivo/';
 
@@ -37,6 +38,13 @@ export class BetanoCollector extends BaseCollector {
 
   async fetchOdds(): Promise<RawOdd[]> {
     const context = await this.createContext();
+
+    if (cookiesExist('betano')) {
+      await injectCookies(context, 'betano');
+    } else {
+      this.log('No cookies found — scraping without session (likely blocked)');
+    }
+
     const page = await context.newPage();
     const results: RawOdd[] = [];
 

@@ -2,6 +2,7 @@ import { chromium, Browser, BrowserContext } from 'playwright';
 import { BaseCollector } from './base.collector';
 import { RawOdd } from '../types';
 import { normalizeMarket } from '../normalizer/markets';
+import { injectCookies, cookiesExist } from '../utils/cookies';
 
 const NOVIBET_LIVE_URL = 'https://www.novibet.com.br/apostas-ao-vivo/futebol';
 
@@ -37,6 +38,13 @@ export class NovibetCollector extends BaseCollector {
 
   async fetchOdds(): Promise<RawOdd[]> {
     const context = await this.createContext();
+
+    if (cookiesExist('novibet')) {
+      await injectCookies(context, 'novibet');
+    } else {
+      this.log('No cookies found — scraping without session (likely blocked)');
+    }
+
     const page = await context.newPage();
     const results: RawOdd[] = [];
 

@@ -2,6 +2,7 @@ import { chromium, Browser, BrowserContext } from 'playwright';
 import { BaseCollector } from './base.collector';
 import { RawOdd } from '../types';
 import { normalizeMarket } from '../normalizer/markets';
+import { injectCookies, cookiesExist } from '../utils/cookies';
 
 const BET365_LIVE_URL = 'https://www.bet365.com/#/IP/EV';
 
@@ -39,6 +40,13 @@ export class Bet365Collector extends BaseCollector {
 
   async fetchOdds(): Promise<RawOdd[]> {
     const context = await this.createContext();
+
+    if (cookiesExist('bet365')) {
+      await injectCookies(context, 'bet365');
+    } else {
+      this.log('No cookies found — scraping without session (likely blocked)');
+    }
+
     const page = await context.newPage();
     const results: RawOdd[] = [];
 
